@@ -19,6 +19,7 @@
     h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px; }
     .subtitle { font-size: 13px; color: #6b7280; margin-bottom: 1rem; }
 
+
     .api-note {
       font-size: 12px;
       color: #4a8a4a;
@@ -303,6 +304,91 @@
 </div>
   <p class="subtitle">日本のクライミング主要エリアの現在の天気・予報・時間帯別予報</p>
 
+  <!-- ロゴ div の直後、api-note の直前に挿入 -->
+<div id="changelog">
+
+  <button id="changelog-btn" onclick="toggleChangelog()" style="
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 0;
+    margin-bottom: 4px;
+    font-family: inherit;
+  ">
+    <span style="font-size: 12px; color: #888;">🆕 バージョン情報</span>
+    <span id="changelog-arrow" style="font-size: 11px; color: #bbb;">▼</span>
+  </button>
+
+  <div id="changelog-body" style="display: none; margin-bottom: 1rem;">
+    <div style="
+      background: rgba(255,255,255,0.8);
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 13px;
+      line-height: 1.8;
+    ">
+
+      <!-- ここにバージョン情報を追加していく -->
+      <div style="margin-bottom: 10px;">
+        <span style="
+          font-size: 11px;
+          font-weight: 600;
+          background: #2563eb18;
+          color: #2563eb;
+          padding: 2px 8px;
+          border-radius: 999px;
+          margin-right: 6px;
+        ">v1.3</span>
+        <span style="font-size: 11px; color: #aaa;">2025-04-03</span>
+        <ul style="margin-top: 4px; padding-left: 16px; color: #555;">
+          <li>日付ピッカー追加（今日〜16日後で期間指定可能に）</li>
+          <li>時間帯予報に判定バッジを追加</li>
+        </ul>
+      </div>
+
+      <div style="margin-bottom: 10px;">
+        <span style="
+          font-size: 11px;
+          font-weight: 600;
+          background: #10b98118;
+          color: #10b981;
+          padding: 2px 8px;
+          border-radius: 999px;
+          margin-right: 6px;
+        ">v1.2</span>
+        <span style="font-size: 11px; color: #aaa;">2025-04-03</span>
+        <ul style="margin-top: 4px; padding-left: 16px; color: #555;">
+          <li>下呂（飛騨金山）エリアを追加</li>
+          <li>風速の単位をkm/h → m/sに修正</li>
+          <li>iPhoneの横スクロール対応</li>
+        </ul>
+      </div>
+
+      <div>
+        <span style="
+          font-size: 11px;
+          font-weight: 600;
+          background: #88888818;
+          color: #888;
+          padding: 2px 8px;
+          border-radius: 999px;
+          margin-right: 6px;
+        ">v1.0</span>
+        <span style="font-size: 11px; color: #aaa;">2025-04-03</span>
+        <ul style="margin-top: 4px; padding-left: 16px; color: #555;">
+          <li>初回リリース</li>
+          <li>Open-Meteo使用・APIキー不要</li>
+          <li>16日間予報・時間帯別予報対応</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
   <p class="api-note">
     ✅ <strong>完全無料</strong>
 
@@ -321,6 +407,13 @@
 </div>
 
 <script>
+function toggleChangelog() {
+    var body  = document.getElementById('changelog-body');
+    var arrow = document.getElementById('changelog-arrow');
+    var isOpen = body.style.display !== 'none';
+    body.style.display  = isOpen ? 'none' : 'block';
+    arrow.textContent   = isOpen ? '▼' : '▲';
+  }
 
   // -----------------------------------------------
   // クライミング可否判定（現在天気・時間帯共通）
