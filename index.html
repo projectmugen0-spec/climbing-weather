@@ -94,6 +94,11 @@
       border-top: 1px solid #f0f0f0;
     }
     .forecast-section.open { display: block; }
+    /* 既存の .forecast-section はそのままで、下記を追加 */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* iOSのスムーズスクロール */
+}
 
     /* 日別テーブル */
     .forecast-title {
@@ -662,12 +667,14 @@ function wmoToInfo(code) {
       var hourlyHtml =
         '<div class="hourly-rows' + (openHourly[hid] ? ' open' : '') + '" id="h-' + hid + '">' +
           '<p class="hourly-title">時間帯別（3時間ごと）</p>' +
-          '<table class="hourly-table">' +
-            '<thead><tr>' +
-              '<th>時刻</th><th></th><th>気温</th><th>湿度</th><th>降水確率</th><th>降水量</th><th>風速</th>' +
-            '</tr></thead>' +
-            '<tbody>' + hourlyRows + '</tbody>' +
-          '</table>' +
+          '<div class="table-scroll">' +      // ← 追加
+            '<table class="hourly-table">' +
+              '<thead><tr>' +
+                '<th>時刻</th><th></th><th>気温</th><th>湿度</th><th>降水確率</th><th>降水量</th><th>風速</th>' +
+              '</tr></thead>' +
+              '<tbody>' + hourlyRows + '</tbody>' +
+            '</table>' +
+          '</div>' +                           // ← 追加
         '</div>';
 
       var mainRow =
@@ -759,14 +766,16 @@ function wmoToInfo(code) {
         sec.id = 'fc-' + cardId;
 
         if (result && result.days) {
-          sec.innerHTML =
+         sec.innerHTML =
             '<p class="forecast-title">16日間予報 — 行をクリックすると時間帯別を展開</p>' +
-            '<table class="forecast-table">' +
-              '<thead><tr>' +
-                '<th colspan="8" style="padding:4px 8px 6px;">日付 / 天気 / 最高・最低 / 湿度 / 降水確率 / 最大風速</th>' +
-              '</tr></thead>' +
-              '<tbody>' + buildDayRows(result.days, cardId) + '</tbody>' +
-            '</table>';
+            '<div class="table-scroll">' +   // ← 追加
+              '<table class="forecast-table">' +
+                '<thead><tr>' +
+                  '<th colspan="8" style="padding:4px 8px 6px;">日付 / 天気 / 最高・最低 / 湿度 / 降水確率 / 最大風速</th>' +
+                '</tr></thead>' +
+                '<tbody>' + buildDayRows(result.days, cardId) + '</tbody>' +
+              '</table>' +
+            '</div>';                         // ← 追加
         } else if (result && result.error) {
           sec.innerHTML = '<p style="padding:12px 16px;font-size:13px;color:#e24b4a;">' + result.error + '</p>';
         }
