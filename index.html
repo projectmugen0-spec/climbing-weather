@@ -158,12 +158,7 @@
   z-index: 100;
   padding: 10px;
 }
-#load-btn {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-}
+
 body {
   padding-bottom: 110px;
 }
@@ -171,14 +166,17 @@ body {
 #load-btn {
   position: fixed;
   bottom: 20px;
-  left: 0;
-  right: 0;
-  margin: auto;
-  width: 220px;
-  z-index: 1000;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(220px, 90vw);
 }
 body {
   overflow-x: hidden;
+}
+#btn-row {
+  position: sticky;
+  bottom: 0;
+  background: rgba(255,255,255,0.9);
 }
   </style>
   <!-- Google tag (gtag.js) -->
