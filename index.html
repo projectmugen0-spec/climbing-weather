@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>クライミングエリア 天気</title>
   <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="岩場天気">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -21,6 +26,29 @@
       font-size: 12px; color: #4a8a4a;
       background: #f0fff0; border: 1px solid #b2ddb2;
       border-radius: 8px; padding: 8px 12px; margin-bottom: 1.25rem;
+    }
+    /* PWAインストールバナー */
+    #pwa-banner {
+      display: none;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: #fff; border-radius: 14px;
+      padding: 12px 14px; margin-bottom: 1.25rem;
+      font-size: 13px; line-height: 1.6;
+      box-shadow: 0 4px 14px rgba(37,99,235,0.25);
+      position: relative;
+    }
+    #pwa-banner .pwa-title { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+    #pwa-banner .pwa-close {
+      position: absolute; top: 10px; right: 12px;
+      background: none; border: none; color: rgba(255,255,255,0.7);
+      font-size: 16px; cursor: pointer; line-height: 1;
+    }
+    #pwa-install-btn {
+      display: inline-block; margin-top: 8px;
+      background: #fff; color: #2563eb;
+      border: none; border-radius: 999px;
+      padding: 6px 16px; font-size: 13px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
     }
     /* CORS警告 */
     .cors-warning {
@@ -155,7 +183,7 @@
     }
   </style>
   <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-K69CPQ64NJ"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
@@ -211,6 +239,14 @@
     <div id="changelog-body" style="display:none;margin-bottom:1rem;">
       <div style="background:rgba(255,255,255,0.8);border:1px solid #e2e8f0;border-radius:12px;padding:12px 16px;font-size:13px;line-height:1.8;">
         <div style="margin-bottom:10px;">
+          <span style="font-size:11px;font-weight:600;background:#2563eb18;color:#2563eb;padding:2px 8px;border-radius:999px;margin-right:6px;">v1.7</span>
+          <span style="font-size:11px;color:#aaa;">2026-04-08</span>
+          <ul style="margin-top:4px;padding-left:16px;color:#555;">
+            <li>PWA対応（ホーム画面に追加可能に）</li>
+            <li>情報取得の並列数を増加（高速化）</li>
+          </ul>
+        </div>
+        <div style="margin-bottom:10px;">
           <span style="font-size:11px;font-weight:600;background:#2563eb18;color:#2563eb;padding:2px 8px;border-radius:999px;margin-right:6px;">v1.6</span>
           <span style="font-size:11px;color:#aaa;">2025-04-07</span>
           <ul style="margin-top:4px;padding-left:16px;color:#555;">
@@ -261,6 +297,13 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- PWAインストールバナー -->
+  <div id="pwa-banner">
+    <button class="pwa-close" onclick="dismissPwaBanner()">✕</button>
+    <div class="pwa-title" id="pwa-banner-title">📲 ホーム画面に追加できます</div>
+    <div id="pwa-banner-body">アプリとして使えます。</div>
   </div>
 
   <!-- CORS警告（ローカル環境向け） -->
@@ -798,5 +841,76 @@
   }));
 
 </script>
+  <script>
+    // -----------------------------------------------
+    // PWAインストールバナー
+    // -----------------------------------------------
+    var deferredPrompt = null;
+
+    function dismissPwaBanner() {
+      document.getElementById('pwa-banner').style.display = 'none';
+      try { localStorage.setItem('pwa-banner-dismissed', '1'); } catch(e) {}
+    }
+
+    function showPwaBanner() {
+      // すでに閉じた or スタンドアロン（インストール済み）なら非表示
+      try { if (localStorage.getItem('pwa-banner-dismissed')) return; } catch(e) {}
+      if (window.matchMedia('(display-mode: standalone)').matches) return;
+      if (window.navigator.standalone === true) return; // iOS Safari インストール済み
+
+      var banner = document.getElementById('pwa-banner');
+      var body   = document.getElementById('pwa-banner-body');
+
+      var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+
+      if (isIOS) {
+        // iOS: 手順案内
+        document.getElementById('pwa-banner-title').textContent = '📲 ホーム画面に追加できます';
+        body.innerHTML =
+          'Safariの <strong>共有ボタン</strong>（□↑）をタップして<br>' +
+          '「<strong>ホーム画面に追加</strong>」を選ぶとアプリとして使えます。';
+        banner.style.display = 'block';
+      } else if (deferredPrompt) {
+        // Chrome/Android: インストールボタン
+        document.getElementById('pwa-banner-title').textContent = '📲 アプリとしてインストール';
+        body.innerHTML =
+          'ホーム画面に追加するとオフラインでも使えます。<br>' +
+          '<button id="pwa-install-btn" onclick="installPwa()">インストール</button>';
+        banner.style.display = 'block';
+      }
+    }
+
+    async function installPwa() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      var result = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      document.getElementById('pwa-banner').style.display = 'none';
+    }
+
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      showPwaBanner();
+    });
+
+    window.addEventListener('appinstalled', function() {
+      document.getElementById('pwa-banner').style.display = 'none';
+    });
+
+    // ページ読み込み後に判定（iOS向けはbeforeinstallpromptが発火しないため）
+    window.addEventListener('load', function() {
+      showPwaBanner();
+    });
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js')
+          .then(function(reg) { console.log('SW registered:', reg.scope); })
+          .catch(function(err) { console.warn('SW registration failed:', err); });
+      });
+    }
+  </script>
 </body>
 </html>

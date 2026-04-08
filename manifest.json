@@ -1,0 +1,24 @@
+{
+  "name": "クライミングエリア 天気",
+  "short_name": "岩場天気",
+  "description": "日本のクライミング主要エリアの現在の天気・予報",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#e0f2fe",
+  "theme_color": "#2563eb",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
