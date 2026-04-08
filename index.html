@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
@@ -177,6 +178,12 @@
       font-size: 11px; font-weight: 600; padding: 2px 8px;
       border-radius: 999px; white-space: nowrap; min-width: 70px; text-align: center;
     }
+    /* モデルバッジ */
+    .model-badge {
+      display: inline-block; font-size: 10px; font-weight: 600;
+      background: #2563eb18; color: #2563eb;
+      border-radius: 999px; padding: 2px 8px; margin-left: 4px;
+    }
     @media (max-width: 600px) {
       .card-desc, .card-wind, .card-precip { display: none; }
       .fc-wind-val { display: none; }
@@ -195,6 +202,7 @@
 <div id="app">
 
   <!-- ロゴ -->
+
   <div style="margin-bottom: 1rem; width: 100%;">
     <svg viewBox="0 0 1200 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">
       <g>
@@ -231,6 +239,7 @@
   <p class="subtitle">日本のクライミング主要エリアの現在の天気・予報・時間帯別予報</p>
 
   <!-- バージョン情報 -->
+
   <div id="changelog">
     <button id="changelog-btn" onclick="toggleChangelog()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:4px 0;margin-bottom:4px;font-family:inherit;">
       <span style="font-size:12px;color:#888;">🆕 バージョン情報</span>
@@ -238,6 +247,13 @@
     </button>
     <div id="changelog-body" style="display:none;margin-bottom:1rem;">
       <div style="background:rgba(255,255,255,0.8);border:1px solid #e2e8f0;border-radius:12px;padding:12px 16px;font-size:13px;line-height:1.8;">
+        <div style="margin-bottom:10px;">
+          <span style="font-size:11px;font-weight:600;background:#2563eb18;color:#2563eb;padding:2px 8px;border-radius:999px;margin-right:6px;">v1.8</span>
+          <span style="font-size:11px;color:#aaa;">2026-04-09</span>
+          <ul style="margin-top:4px;padding-left:16px;color:#555;">
+            <li>気象モデルをJMA（気象庁）に変更（tenki.jpとの乖離を低減）</li>
+          </ul>
+        </div>
         <div style="margin-bottom:10px;">
           <span style="font-size:11px;font-weight:600;background:#2563eb18;color:#2563eb;padding:2px 8px;border-radius:999px;margin-right:6px;">v1.7</span>
           <span style="font-size:11px;color:#aaa;">2026-04-08</span>
@@ -300,6 +316,7 @@
   </div>
 
   <!-- PWAインストールバナー -->
+
   <div id="pwa-banner">
     <button class="pwa-close" onclick="dismissPwaBanner()">✕</button>
     <div class="pwa-title" id="pwa-banner-title">📲 ホーム画面に追加できます</div>
@@ -307,13 +324,14 @@
   </div>
 
   <!-- CORS警告（ローカル環境向け） -->
+
   <div id="cors-warning" class="cors-warning">
     ⚠️ <strong>ローカルファイルから開いています。</strong>
     ブラウザのセキュリティ制限によりAPIへの通信がブロックされます。
     GitHub Pages などの <strong>HTTPS環境にアップロード</strong> して開いてください。
   </div>
 
-  <p class="api-note">✅ <strong>完全無料</strong>（Open-Meteo使用・APIキー不要）</p>
+  <p class="api-note">✅ <strong>完全無料</strong>（Open-Meteo使用・APIキー不要）<span class="model-badge">気象庁モデル JMA</span></p>
 
   <div id="btn-row">
     <div class="date-row">
@@ -327,7 +345,8 @@
 
   <div id="areas-container"></div>
 
-  <button id="load-btn" onclick="loadAll()">登れる場所をチェック</button>
+<button id="load-btn" onclick="loadAll()">登れる場所をチェック</button>
+
 </div>
 
 <script>
@@ -508,14 +527,14 @@
   }
 
   // -----------------------------------------------
-  // Open-Meteo API 取得
+  // Open-Meteo API 取得（JMAモデル使用）
   // -----------------------------------------------
   async function fetchArea(area) {
     var startVal = document.getElementById('start-date').value;
     var endVal   = document.getElementById('end-date').value;
 
     // localStorageキャッシュ（1時間）
-    var cacheKey = 'weather_' + area.name + '_' + startVal + '_' + endVal;
+    var cacheKey = 'weather_jma_' + area.name + '_' + startVal + '_' + endVal;
     try {
       var cached = localStorage.getItem(cacheKey);
       if (cached) {
@@ -530,6 +549,7 @@
       'longitude='  + area.lon,
       'timezone=Asia/Tokyo',
       'wind_speed_unit=ms',
+      'models=jma_seamless',          // ← JMA（気象庁）モデルに変更
       'start_date=' + startVal,
       'end_date='   + endVal,
       'current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,precipitation',
@@ -841,6 +861,7 @@
   }));
 
 </script>
+
   <script>
     // -----------------------------------------------
     // PWAインストールバナー
@@ -853,10 +874,9 @@
     }
 
     function showPwaBanner() {
-      // すでに閉じた or スタンドアロン（インストール済み）なら非表示
       try { if (localStorage.getItem('pwa-banner-dismissed')) return; } catch(e) {}
       if (window.matchMedia('(display-mode: standalone)').matches) return;
-      if (window.navigator.standalone === true) return; // iOS Safari インストール済み
+      if (window.navigator.standalone === true) return;
 
       var banner = document.getElementById('pwa-banner');
       var body   = document.getElementById('pwa-banner-body');
@@ -864,14 +884,12 @@
       var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
 
       if (isIOS) {
-        // iOS: 手順案内
         document.getElementById('pwa-banner-title').textContent = '📲 ホーム画面に追加できます';
         body.innerHTML =
           'Safariの <strong>共有ボタン</strong>（□↑）をタップして<br>' +
           '「<strong>ホーム画面に追加</strong>」を選ぶとアプリとして使えます。';
         banner.style.display = 'block';
       } else if (deferredPrompt) {
-        // Chrome/Android: インストールボタン
         document.getElementById('pwa-banner-title').textContent = '📲 アプリとしてインストール';
         body.innerHTML =
           'ホーム画面に追加するとオフラインでも使えます。<br>' +
@@ -898,11 +916,11 @@
       document.getElementById('pwa-banner').style.display = 'none';
     });
 
-    // ページ読み込み後に判定（iOS向けはbeforeinstallpromptが発火しないため）
     window.addEventListener('load', function() {
       showPwaBanner();
     });
   </script>
+
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
@@ -912,5 +930,6 @@
       });
     }
   </script>
+
 </body>
 </html>
