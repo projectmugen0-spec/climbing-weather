@@ -866,7 +866,7 @@
   }
 
   // -----------------------------------------------
-  // Open-Meteo API 取得
+  // Open-Meteo API 取得（JMA + 汎用の併用）
   // -----------------------------------------------
   async function fetchArea(area) {
     var startVal = document.getElementById('start-date').value;
@@ -883,26 +883,58 @@
       }
     } catch(e) {}
 
-    var params = [
-      'latitude='   + area.lat,
-      'longitude='  + area.lon,
-      'timezone=Asia/Tokyo',
-      'wind_speed_unit=ms',
-      'start_date=' + startVal,
-      'end_date='   + endVal,
-      'models=jma_seamless',
-      'current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,precipitation',
-      'daily=weather_code,temperature_2m_max,temperature_2m_min,' +
-        'relative_humidity_2m_max,relative_humidity_2m_min,' +
-        'precipitation_sum,precipitation_probability_max,wind_speed_10m_max',
-      'hourly=temperature_2m,relative_humidity_2m,precipitation_probability,' +
-        'precipitation,weather_code,wind_speed_10m',
-    ].join('&');
+    try {
+      // ============================================
+      // 1. JMA Seamless API から基本データ取得
+      // ============================================
+      var jmaParams = [
+        'latitude='   + area.lat,
+        'longitude='  + area.lon,
+        'timezone=Asia/Tokyo',
+        'wind_speed_unit=ms',
+        'start_date=' + startVal,
+        'end_date='   + endVal,
+        'models=jma_seamless',
+        'current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,precipitation',
+        'daily=weather_code,temperature_2m_max,temperature_2m_min,' +
+          'relative_humidity_2m_max,relative_humidity_2m_min,' +
+          'precipitation_sum,precipitation_probability_max,wind_speed_10m_max',
+        'hourly=temperature_2m,relative_humidity_2m,precipitation,' +
+          'precipitation_probability,weather_code,wind_speed_10m',
+      ].join('&');
 
-    var data = await fetchWithRetry('https://api.open-meteo.com/v1/forecast?' + params, 3, 1000);
-    if (data.error) return { error: data.error };
+      var jmaData = await fetchWithRetry(
+        'https://api.open-meteo.com/v1/forecast?' + jmaParams, 3, 1000
+      );
+      
+      if (jmaData.error) return { error: jmaData.error };
 
-    var c = data.current, d = data.daily, h = data.hourly;
+      // ============================================
+      // 2. 汎用 Forecast API から降水確率を補足取得
+      // ============================================
+      var forecastParams = [
+        'latitude='   + area.lat,
+        'longitude='  + area.lon,
+        'timezone=Asia/Tokyo',
+        'start_date=' + startVal,
+        'end_date='   + endVal,
+        'hourly=precipitation_probability',
+      ].join('&');
+
+      var forecastData = await fetchWithRetry(
+        'https://api.open-meteo.com/v1/forecast?' + forecastParams, 3, 1000
+      );
+
+      // ============================================
+      // 3. 2つのAPIデータを統合
+      // ============================================
+      if (forecastData && forecastData.hourly && forecastData.hourly.precipitation_probability) {
+        // 汎用APIの降水確率をJMAデータに上書き
+        jmaData.hourly.precipitation_probability = 
+          forecastData.hourly.precipitation_probability;
+      }
+
+      var c = jmaData.current, d = jmaData.daily, h = jmaData.hourly;
 
     var hourlyByDate = {};
     h.time.forEach(function(t, i) {
