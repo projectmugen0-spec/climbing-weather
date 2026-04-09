@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>クライミングエリア 天気</title>
   <link rel="manifest" href="manifest.json">
@@ -178,16 +177,79 @@
       font-size: 11px; font-weight: 600; padding: 2px 8px;
       border-radius: 999px; white-space: nowrap; min-width: 70px; text-align: center;
     }
-    /* モデルバッジ */
-    .model-badge {
-      display: inline-block; font-size: 10px; font-weight: 600;
-      background: #2563eb18; color: #2563eb;
-      border-radius: 999px; padding: 2px 8px; margin-left: 4px;
-    }
     @media (max-width: 600px) {
       .card-desc, .card-wind, .card-precip { display: none; }
       .fc-wind-val { display: none; }
     }
+    #btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.date-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.filter-row {
+  margin-bottom: 8px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(37, 99, 235, 0.1);
+  border-bottom: 1px solid rgba(37, 99, 235, 0.1);
+}
+/* 週末ボタンのデザイン */
+#weekend-btn {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+  color: #4b5563;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+#weekend-btn:hover:not(.active) {
+  background: linear-gradient(135deg, #e5e7eb, #d1d5db);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+#weekend-btn:active:not(.active) {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* アクティブ状態（選択中） */
+#weekend-btn.active {
+  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+  color: white;
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+}
+
+#weekend-btn.active:hover {
+  background: linear-gradient(135deg, #c084fc, #a78bfa);
+  box-shadow: 0 12px 28px rgba(139, 92, 246, 0.4);
+  transform: translateY(-3px);
+}
+
+#weekend-btn.active::before {
+  content: '✓ ';
+  font-weight: bold;
+}
   </style>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-K69CPQ64NJ"></script>
@@ -202,7 +264,6 @@
 <div id="app">
 
   <!-- ロゴ -->
-
   <div style="margin-bottom: 1rem; width: 100%;">
     <svg viewBox="0 0 1200 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">
       <g>
@@ -239,7 +300,6 @@
   <p class="subtitle">日本のクライミング主要エリアの現在の天気・予報・時間帯別予報</p>
 
   <!-- バージョン情報 -->
-
   <div id="changelog">
     <button id="changelog-btn" onclick="toggleChangelog()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:4px 0;margin-bottom:4px;font-family:inherit;">
       <span style="font-size:12px;color:#888;">🆕 バージョン情報</span>
@@ -247,11 +307,13 @@
     </button>
     <div id="changelog-body" style="display:none;margin-bottom:1rem;">
       <div style="background:rgba(255,255,255,0.8);border:1px solid #e2e8f0;border-radius:12px;padding:12px 16px;font-size:13px;line-height:1.8;">
-        <div style="margin-bottom:10px;">
-          <span style="font-size:11px;font-weight:600;background:#2563eb18;color:#2563eb;padding:2px 8px;border-radius:999px;margin-right:6px;">v1.8</span>
+      <div style="margin-bottom:10px;">
+          <span style="font-size:11px;font-weight:600;background:#10b98118;color:#10b981;padding:2px 8px;border-radius:999px;margin-right:6px;">v1.8</span>
           <span style="font-size:11px;color:#aaa;">2026-04-09</span>
           <ul style="margin-top:4px;padding-left:16px;color:#555;">
-            <li>気象モデルをJMA（気象庁）に変更（tenki.jpとの乖離を低減）</li>
+            <li>JMA API (Seamless) に切り替え（日本の気象データがより正確に）</li>
+            <li>予報期間を16日間 → 11日間に調整</li>
+            <li>週末フィルターボタンを追加</li>
           </ul>
         </div>
         <div style="margin-bottom:10px;">
@@ -316,7 +378,6 @@
   </div>
 
   <!-- PWAインストールバナー -->
-
   <div id="pwa-banner">
     <button class="pwa-close" onclick="dismissPwaBanner()">✕</button>
     <div class="pwa-title" id="pwa-banner-title">📲 ホーム画面に追加できます</div>
@@ -324,30 +385,38 @@
   </div>
 
   <!-- CORS警告（ローカル環境向け） -->
-
   <div id="cors-warning" class="cors-warning">
     ⚠️ <strong>ローカルファイルから開いています。</strong>
     ブラウザのセキュリティ制限によりAPIへの通信がブロックされます。
     GitHub Pages などの <strong>HTTPS環境にアップロード</strong> して開いてください。
   </div>
 
-  <p class="api-note">✅ <strong>完全無料</strong>（Open-Meteo使用・APIキー不要）<span class="model-badge">気象庁モデル JMA</span></p>
+  <p class="api-note">✅ <strong>完全無料</strong>（JMA API (Open-Meteo) 使用・APIキー不要）</p>
 
-  <div id="btn-row">
-    <div class="date-row">
-      <label>開始</label>
-      <input type="date" id="start-date" />
-      <label>終了</label>
-      <input type="date" id="end-date" />
-    </div>
-    <span id="last-updated"></span>
+ <div id="btn-row">
+
+  <div class="date-row">
+    <label>開始</label>
+    <input type="date" id="start-date" />
+
+    <label>終了</label>
+    <input type="date" id="end-date" />
   </div>
 
-  <div id="areas-container"></div>
+  <!-- ★ ここに入れる -->
+  <div class="filter-row">
+    <button id="weekend-btn" onclick="toggleWeekend()">
+      週末（金土日）だけ表示
+    </button>
+  </div>
 
-<button id="load-btn" onclick="loadAll()">登れる場所をチェック</button>
+  <span id="last-updated"></span>
 
 </div>
+
+<div id="areas-container"></div>
+
+<button id="load-btn" onclick="loadAll()">登れる場所をチェック</button>
 
 <script>
 
@@ -484,7 +553,7 @@
   function initDatePicker() {
     var today   = new Date();
     var maxDate = new Date();
-    maxDate.setDate(today.getDate() + 15);
+    maxDate.setDate(today.getDate() + 10);
     var startEl = document.getElementById('start-date');
     var endEl   = document.getElementById('end-date');
     startEl.value = fmtISO(today);
@@ -527,14 +596,14 @@
   }
 
   // -----------------------------------------------
-  // Open-Meteo API 取得（JMAモデル使用）
+  // Open-Meteo API 取得
   // -----------------------------------------------
   async function fetchArea(area) {
     var startVal = document.getElementById('start-date').value;
     var endVal   = document.getElementById('end-date').value;
 
     // localStorageキャッシュ（1時間）
-    var cacheKey = 'weather_jma_' + area.name + '_' + startVal + '_' + endVal;
+    var cacheKey = 'weather_' + area.name + '_' + startVal + '_' + endVal;
     try {
       var cached = localStorage.getItem(cacheKey);
       if (cached) {
@@ -549,9 +618,9 @@
       'longitude='  + area.lon,
       'timezone=Asia/Tokyo',
       'wind_speed_unit=ms',
-      'models=jma_seamless',          // ← JMA（気象庁）モデルに変更
       'start_date=' + startVal,
       'end_date='   + endVal,
+      'models=jma_seamless',
       'current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,precipitation',
       'daily=weather_code,temperature_2m_max,temperature_2m_min,' +
         'relative_humidity_2m_max,relative_humidity_2m_min,' +
@@ -669,12 +738,38 @@
       '更新: ' + now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
     btn.disabled = false;
     btn.textContent = '登れる場所をチェック';
+    
+    // ★ 結果を保存して再フィルター時に使用可能にする
+    lastResults = allResults;
   }
 
   // -----------------------------------------------
   // 描画
   // -----------------------------------------------
   var openCards = {}, openHourly = {};
+  // 状態管理
+var weekendOnly = false;
+var lastResults = null;
+
+// ★ ここに置く（このへんがベスト）
+function toggleWeekend() {
+  weekendOnly = !weekendOnly;
+
+  var btn = document.getElementById('weekend-btn');
+
+  if (weekendOnly) {
+    btn.textContent = '全日表示に戻す';
+    btn.classList.add('active');
+  } else {
+    btn.textContent = '週末（金土日）だけ表示';
+    btn.classList.remove('active');
+  }
+
+  // 再描画
+  if (lastResults) {
+    renderAll(lastResults);
+  }
+}
 
   function toggleCard(cardId) {
     openCards[cardId] = !openCards[cardId];
@@ -693,8 +788,17 @@
   }
 
   function buildDayRows(days, cardId) {
-    return days.map(function(day, di) {
-      var prevDay  = days[di - 1];
+
+  var filteredDays = days.filter(function(day) {
+  if (!weekendOnly) return true;
+
+  var dow = getDow(day.date);
+  // 5:金曜, 6:土曜, 0:日曜
+  return dow === 5 || dow === 6 || dow === 0;
+});
+
+  return filteredDays.map(function(day, di) {
+      var prevDay  = filteredDays[di - 1];
       var dow      = getDow(day.date);
       var info     = wmoToInfo(day.wmo);
       var hid      = cardId + '-' + di;
@@ -720,27 +824,41 @@
       });
 
       var hourlyRows = hourlyFiltered.map(function(h) {
-        var hi = wmoToInfo(h.wmo);
-        var hj = judgeClimbability({ temp: h.temp, humidity: h.hum, wind: h.wind, precip: h.precip });
-        return '<tr>' +
-          '<td class="h-time">'   + h.time  + '</td>' +
-          '<td class="h-icon">'   + hi.icon + '</td>' +
-          '<td class="h-temp">'   + h.temp  + '°C</td>' +
-          '<td class="h-hum">💧 ' + h.hum   + '%</td>' +
-          '<td class="h-prob">🌧 ' + (h.prob != null ? h.prob + '%' : '—') + '</td>' +
-          '<td class="h-precip">' + h.precip + 'mm</td>' +
-          '<td class="h-wind">💨 ' + h.wind  + 'm/s</td>' +
-          '<td><span class="h-judge" style="background:' + hj.color + '20;color:' + hj.color + ';">' + hj.text + '</span></td>' +
-        '</tr>';
-      }).join('');
+  var hi = wmoToInfo(h.wmo);
+  var hj = judgeClimbability({
+    temp: h.temp,
+    humidity: h.hum,
+    wind: h.wind,
+    precip: h.precip
+  });
+
+  return '<tr>' +
+
+    // ★ これを一番最初に置く
+    '<td class="h-judge">' +
+      '<span style="background:' + hj.color + '20;color:' + hj.color + ';">' +
+        hj.text +
+      '</span>' +
+    '</td>' +
+
+    '<td class="h-time">' + h.time + '</td>' +
+    '<td class="h-icon">' + hi.icon + '</td>' +
+    '<td class="h-temp">' + h.temp + '°C</td>' +
+    '<td class="h-hum">💧 ' + h.hum + '%</td>' +
+    '<td class="h-prob">🌧 ' + (h.prob != null ? h.prob + '%' : '—') + '</td>' +
+    '<td class="h-precip">' + h.precip + 'mm</td>' +
+    '<td class="h-wind">💨 ' + h.wind + 'm/s</td>' +
+
+  '</tr>';
+}).join('');
 
       var hourlyHtml =
         '<div class="hourly-rows' + (openHourly[hid] ? ' open' : '') + '" id="h-' + hid + '">' +
           '<p class="hourly-title">時間帯別（3時間ごと）</p>' +
           '<div class="table-scroll"><table class="hourly-table">' +
             '<thead><tr>' +
-              '<th>時刻</th><th></th><th>気温</th><th>湿度</th>' +
-              '<th>降水確率</th><th>降水量</th><th>風速</th><th>判定</th>' +
+              '<th>判定</th><th>時刻</th><th></th><th>気温</th><th>湿度</th>' +
+              '<th>降水確率</th><th>降水量</th><th>風速</th>' +
             '</tr></thead>' +
             '<tbody>' + hourlyRows + '</tbody>' +
           '</table></div>' +
@@ -748,25 +866,32 @@
 
       var dayBadgeStyle = 'background:' + judge.color + '20;color:' + judge.color + ';';
       var mainRow =
-        '<div class="day-row-main ' + dowClass + '" onclick="toggleHourly(\'' + hid + '\')">' +
-          '<span class="fc-date">'  + fmtDate(day.date) + '</span>' +
-          '<span class="fc-icon">'  + info.icon + '</span>' +
-          '<span class="fc-desc">'  + info.desc + '</span>' +
-          '<span class="fc-max">'   + day.tempMax + '°</span>' +
-          '<span class="fc-sep">/ </span>' +
-          '<span class="fc-min">'   + day.tempMin + '°</span>' +
-          '<span class="hum-wrap">' +
-            '<span class="hum-val">' + humPct + '</span>' +
-            '<div class="hum-bar"><div class="hum-fill" style="width:' + humPct + '"></div></div>' +
-          '</span>' +
-          '<span class="prob-wrap">' +
-            '<span class="prob-val">' + probPct + '</span>' +
-            '<div class="prob-bar"><div class="prob-fill" style="width:' + probFill + '"></div></div>' +
-          '</span>' +
-          '<span class="fc-wind-val">💨 ' + day.wind + 'm/s</span>' +
-          '<span class="day-judge" style="' + dayBadgeStyle + '">' + judge.text + '</span>' +
-          '<span class="day-toggle" id="ht-' + hid + '">' + (openHourly[hid] ? '▲' : '▼') + '</span>' +
-        '</div>';
+  '<div class="day-row-main ' + dowClass + '" onclick="toggleHourly(\'' + hid + '\')">' +
+
+    // ← 判定を一番左
+    '<span class="day-judge" style="' + dayBadgeStyle + '">' + judge.text + '</span>' +
+
+    '<span class="fc-date">'  + fmtDate(day.date) + '</span>' +
+    '<span class="fc-icon">'  + info.icon + '</span>' +
+    '<span class="fc-desc">'  + info.desc + '</span>' +
+
+    '<span class="fc-max">'   + day.tempMax + '°</span>' +
+    '<span class="fc-sep">/ </span>' +
+    '<span class="fc-min">'   + day.tempMin + '°</span>' +
+
+    // ★ 湿度（数値だけ）
+    '<span class="fc-humidity">💧 ' + humPct + '</span>' +
+
+    // ★ 降水確率（数値だけ）
+    '<span class="fc-prob">🌧 ' + probPct + '</span>' +
+
+    '<span class="fc-wind-val">💨 ' + day.wind + 'm/s</span>' +
+
+    '<span class="day-toggle" id="ht-' + hid + '">' +
+      (openHourly[hid] ? '▲' : '▼') +
+    '</span>' +
+
+  '</div>';
 
       return '<tr><td colspan="8" style="padding:0;">' + mainRow + hourlyHtml + '</td></tr>';
     }).join('');
@@ -837,7 +962,7 @@
             '<p class="forecast-title">予報 — 行をクリックすると時間帯別（判定付き）を展開</p>' +
             '<div class="table-scroll"><table class="forecast-table">' +
               '<thead><tr><th colspan="8" style="padding:4px 8px 6px;">' +
-                '日付 / 天気 / 最高・最低 / 湿度 / 降水確率 / 最大風速 / 判定' +
+                '判定 / 日付 / 天気 / 最高・最低 / 湿度 / 降水確率 / 最大風速' +
               '</th></tr></thead>' +
               '<tbody>' + buildDayRows(result.days, cardId) + '</tbody>' +
             '</table></div>';
@@ -861,7 +986,6 @@
   }));
 
 </script>
-
   <script>
     // -----------------------------------------------
     // PWAインストールバナー
@@ -874,9 +998,10 @@
     }
 
     function showPwaBanner() {
+      // すでに閉じた or スタンドアロン（インストール済み）なら非表示
       try { if (localStorage.getItem('pwa-banner-dismissed')) return; } catch(e) {}
       if (window.matchMedia('(display-mode: standalone)').matches) return;
-      if (window.navigator.standalone === true) return;
+      if (window.navigator.standalone === true) return; // iOS Safari インストール済み
 
       var banner = document.getElementById('pwa-banner');
       var body   = document.getElementById('pwa-banner-body');
@@ -884,12 +1009,14 @@
       var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
 
       if (isIOS) {
+        // iOS: 手順案内
         document.getElementById('pwa-banner-title').textContent = '📲 ホーム画面に追加できます';
         body.innerHTML =
           'Safariの <strong>共有ボタン</strong>（□↑）をタップして<br>' +
           '「<strong>ホーム画面に追加</strong>」を選ぶとアプリとして使えます。';
         banner.style.display = 'block';
       } else if (deferredPrompt) {
+        // Chrome/Android: インストールボタン
         document.getElementById('pwa-banner-title').textContent = '📲 アプリとしてインストール';
         body.innerHTML =
           'ホーム画面に追加するとオフラインでも使えます。<br>' +
@@ -916,11 +1043,11 @@
       document.getElementById('pwa-banner').style.display = 'none';
     });
 
+    // ページ読み込み後に判定（iOS向けはbeforeinstallpromptが発火しないため）
     window.addEventListener('load', function() {
       showPwaBanner();
     });
   </script>
-
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
@@ -930,6 +1057,5 @@
       });
     }
   </script>
-
 </body>
 </html>
