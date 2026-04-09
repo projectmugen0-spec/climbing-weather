@@ -284,29 +284,9 @@
     }
     #app { max-width: 640px; margin: 0 auto; }
     
-    /* レスポンシブ対応：スマホは2列、タブレット以上は対応 */
+    /* レスポンシブ対応：1列表示（シンプル） */
     #areas-container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    
-    @media (max-width: 480px) {
-      /* 超小型スマホ：2列のまま */
-      #areas-container {
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-      }
-      body {
-        padding: 1rem 0.75rem;
-      }
-    }
-    
-    @media (min-width: 641px) {
-      /* タブレット以上：1列に戻す（元のレイアウト） */
-      #areas-container {
-        grid-template-columns: 1fr;
-      }
+      display: block;
     }
     .subtitle { font-size: 13px; color: #6b7280; margin-bottom: 1rem; }
     .api-note {
@@ -373,10 +353,9 @@
     .region-label {
       font-size: 12px; font-weight: 600; color: #888;
       letter-spacing: 0.05em; margin: 1.5rem 0 0.6rem;
-      grid-column: 1 / -1;
     }
     .area-card {
-      border-radius: 18px; border: none;
+      border-radius: 18px; border: none; margin-bottom: 14px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.08); backdrop-filter: blur(6px);
       background: rgba(255,255,255,0.85); overflow: hidden; transition: 0.25s;
     }
@@ -468,31 +447,6 @@
     @media (max-width: 600px) {
       .card-desc, .card-wind, .card-precip { display: none; }
       .fc-wind-val { display: none; }
-      
-      /* スマホで2列レイアウト */
-      #areas-container {
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-      }
-      
-      .card-header {
-        padding: 12px;
-        flex-wrap: wrap;
-      }
-      
-      .card-name {
-        font-size: 14px;
-        min-width: 70px;
-      }
-      
-      .card-temp {
-        font-size: 18px;
-      }
-      
-      .card-toggle {
-        width: 100%;
-        text-align: right;
-      }
     }
     #btn-row {
   display: flex;
