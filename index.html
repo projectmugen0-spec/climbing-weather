@@ -953,8 +953,26 @@
         });
       });
 
+      // ★ 修正点：daily データを days 配列に変換
+      var days = [];
+      if (d.time && Array.isArray(d.time)) {
+        d.time.forEach(function(dateStr, i) {
+          days.push({
+            date:       dateStr,
+            wmo:        d.weather_code && d.weather_code[i] != null ? d.weather_code[i] : 0,
+            tempMax:    d.temperature_2m_max && d.temperature_2m_max[i] != null ? Math.round(d.temperature_2m_max[i]) : 0,
+            tempMin:    d.temperature_2m_min && d.temperature_2m_min[i] != null ? Math.round(d.temperature_2m_min[i]) : 0,
+            humidity:   d.relative_humidity_2m_max && d.relative_humidity_2m_max[i] != null ? d.relative_humidity_2m_max[i] : 50,
+            wind:       d.wind_speed_10m_max && d.wind_speed_10m_max[i] != null ? parseFloat(d.wind_speed_10m_max[i].toFixed(1)) : 0,
+            precip:     d.precipitation_sum && d.precipitation_sum[i] != null ? parseFloat(d.precipitation_sum[i].toFixed(1)) : 0,
+            precipProb: d.precipitation_probability_max && d.precipitation_probability_max[i] != null ? d.precipitation_probability_max[i] : null,
+            hourly:     hourlyByDate[dateStr] || []
+          });
+        });
+      }
+
       var result = {
-        current: c, daily: d, hourly: h, hourlyByDate: hourlyByDate
+        current: c, daily: d, hourly: h, hourlyByDate: hourlyByDate, days: days
       };
 
       // キャッシュに保存
@@ -1216,9 +1234,16 @@ function toggleWeekend() {
             '<span class="card-pref">' + area.pref + '</span>' +
             '<span class="card-status card-error">' + result.error + '</span>';
         } else {
-          var cur   = result.current;
-          var judge = judgeClimbability(cur);
-          var info  = wmoToInfo(cur.wmo);
+          var cur = result.current;
+
+var judge = judgeClimbability({
+  temp: cur.temperature_2m,
+  humidity: cur.relative_humidity_2m,
+  wind: cur.wind_speed_10m,
+  precip: cur.precipitation
+});
+
+var info = wmoToInfo(cur.weather_code);
           hdr.innerHTML =
             '<span class="card-name">'  + area.name        + '</span>' +
             '<span class="card-pref">'  + area.pref        + '</span>' +
