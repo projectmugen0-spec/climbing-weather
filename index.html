@@ -567,7 +567,7 @@
   <h1 style="font-size: 1.5rem; font-weight: 700; color: #333; margin-bottom: 0.5rem; text-align: center;">
     クライミング天気予報
   </h1>
-  <p class="subtitle">日本のクライミング主要エリアの天気・予報・時間帯別予報</p>
+  <p class="subtitle">日本のクライミング主要エリアの現在の天気・予報・時間帯別予報</p>
 
   <!-- バージョン情報 -->
   <div id="changelog">
@@ -583,7 +583,7 @@
           <ul style="margin-top:4px;padding-left:16px;color:#555;">
             <li>JMA API (Seamless) に切り替え（日本の気象データがより正確に）</li>
             <li>予報期間を16日間 → 11日間に調整</li>
-            <li>週末フィルターボタンの追加</li>
+            <li>週末フィルターボタンの修正とデザイン改善</li>
           </ul>
         </div>
         <div style="margin-bottom:10px;">
@@ -936,58 +936,38 @@
 
       var c = jmaData.current, d = jmaData.daily, h = jmaData.hourly;
 
-    var hourlyByDate = {};
-    h.time.forEach(function(t, i) {
-      var dateKey = t.slice(0, 10);
-      if (!hourlyByDate[dateKey]) hourlyByDate[dateKey] = [];
-      hourlyByDate[dateKey].push({
-        time:   t.slice(11, 16),
-        temp:   Math.round(h.temperature_2m[i]),
-        hum:    h.relative_humidity_2m ? h.relative_humidity_2m[i] : null,
-        prob:   h.precipitation_probability ? h.precipitation_probability[i] : null,
-        precip: h.precipitation && h.precipitation[i] != null
-                  ? parseFloat(h.precipitation[i].toFixed(1)) : 0,
-        wmo:    h.weather_code ? h.weather_code[i] : 0,
-        wind:   h.wind_speed_10m && h.wind_speed_10m[i] != null
-                  ? parseFloat(h.wind_speed_10m[i].toFixed(1)) : 0,
+      var hourlyByDate = {};
+      h.time.forEach(function(t, i) {
+        var dateKey = t.slice(0, 10);
+        if (!hourlyByDate[dateKey]) hourlyByDate[dateKey] = [];
+        hourlyByDate[dateKey].push({
+          time:   t.slice(11, 16),
+          temp:   Math.round(h.temperature_2m[i]),
+          hum:    h.relative_humidity_2m ? h.relative_humidity_2m[i] : null,
+          prob:   h.precipitation_probability ? h.precipitation_probability[i] : null,
+          precip: h.precipitation && h.precipitation[i] != null
+                    ? parseFloat(h.precipitation[i].toFixed(1)) : 0,
+          wmo:    h.weather_code ? h.weather_code[i] : 0,
+          wind:   h.wind_speed_10m && h.wind_speed_10m[i] != null
+                    ? parseFloat(h.wind_speed_10m[i].toFixed(1)) : 0,
+        });
       });
-    });
 
-    var days = d.time.map(function(date, i) {
-      var humAvg = Math.round(
-        (d.relative_humidity_2m_max[i] + d.relative_humidity_2m_min[i]) / 2
-      );
-      return {
-        date:       date,
-        wmo:        d.weather_code[i],
-        tempMax:    Math.round(d.temperature_2m_max[i]),
-        tempMin:    Math.round(d.temperature_2m_min[i]),
-        humidity:   humAvg,
-        precip:     d.precipitation_sum[i] != null ? d.precipitation_sum[i].toFixed(1) : '—',
-        precipProb: d.precipitation_probability_max[i] != null
-                      ? d.precipitation_probability_max[i] : null,
-        wind:       d.wind_speed_10m_max[i] != null
-                      ? d.wind_speed_10m_max[i].toFixed(1) : '—',
-        hourly:     hourlyByDate[date] || [],
+      var result = {
+        current: c, daily: d, hourly: h, hourlyByDate: hourlyByDate
       };
-    });
 
-    var result = {
-      current: {
-        temp:     Math.round(c.temperature_2m),
-        humidity: c.relative_humidity_2m,
-        wind:     parseFloat(c.wind_speed_10m.toFixed(1)),
-        precip:   c.precipitation,
-        wmo:      c.weather_code,
-      },
-      days: days,
-    };
+      // キャッシュに保存
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify({time: Date.now(), data: result}));
+      } catch(e) {}
 
-    try {
-      localStorage.setItem(cacheKey, JSON.stringify({ data: result, time: Date.now() }));
-    } catch(e) {}
+      return result;
 
-    return result;
+    } catch(e) {
+      console.error('API error:', e);
+      return {error: e.message || 'API取得エラー'};
+    }
   }
 
   // -----------------------------------------------
