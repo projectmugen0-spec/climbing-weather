@@ -3,13 +3,268 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>クライミングエリア 天気</title>
+  <title>クライミング天気 - 小川山・御岳・廻り目平・瑞牆山・六甲山など全15エリアの正確な気象情報</title>
+  <meta name="description" content="日本のクライミング主要エリア（小川山・御岳・廻り目平・瑞牆山・二子山・湯河原幕岩・城ヶ崎・塩原・三峰・鳳来寺山・恵那・笠置山・下呂・六甲山・帝釈峡・大分・耶馬溪）のリアルタイム天気予報。JMA API使用で正確な気象情報。気温・湿度・風速・降水確率を表示。ひらがな検索対応。">
+  <meta name="keywords" content="クライミング 天気,小川山 天気,おがわやま 天気,御岳 天気,みたけ 天気,廻り目平 天気,まわりめだいら 天気,瑞牆山 天気,みずがきやま 天気,二子山 天気,ふたごやま 天気,湯河原幕岩 天気,ゆがわら 天気,城ヶ崎 天気,じょうがさき 天気,塩原 天気,しおはら 天気,三峰 天気,みつみね 天気,鳳来寺山 天気,ほうらいじやま 天気,恵那 天気,えな 天気,笠置山 天気,かさおきやま 天気,下呂 天気,げろ 天気,飛騨金山 天気,ひだかなやま 天気,六甲山 天気,ろっこうさん 天気,帝釈峡 天気,たいしゃくきょう 天気,大分 天気,おおいた 天気,耶馬溪 天気,やばけい 天気,ボルダリング 天気,岩場 天気,クライミング 気象,天気予報">
+  
+  <!-- OGP -->
+  <meta property="og:title" content="クライミング天気 - 日本全国主要15エリアの正確な気象情報">
+  <meta property="og:description" content="小川山、御岳、廻り目平など日本のクライミング主要15エリアのリアルタイム天気情報。ひらがな検索対応。">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://open-meteo.com/og_image.png">
+  
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2563eb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="岩場天気">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
+  
+  <!-- Schema.org 構造化マークアップ：ウェブサイト情報 -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "クライミング天気",
+    "url": "https://climbing-weather.example.com",
+    "applicationCategory": "UtilitiesApplication",
+    "description": "日本のクライミング主要エリアのリアルタイム天気予報",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "JPY"
+    }
+  }
+  </script>
+  
+  <!-- Schema.org 構造化マークアップ：各エリア情報 -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": [
+      {
+        "@type": "Place",
+        "name": "小川山",
+        "alternateName": "おがわやま",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "長野県",
+          "addressLocality": "北相木村"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 35.908352690634295,
+          "longitude": 138.64018613967033
+        }
+      },
+      {
+        "@type": "Place",
+        "name": "御岳",
+        "alternateName": "みたけ",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "東京都",
+          "addressLocality": "青梅市"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 35.80056755821563,
+          "longitude": 139.1832510556361
+        }
+      },
+      {
+        "@type": "Place",
+        "name": "瑞牆山",
+        "alternateName": "みずがきやま",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "山梨県",
+          "addressLocality": "北杜市"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 35.89652486221408,
+          "longitude": 138.57360487603307
+        }
+      },
+      {
+        "@type": "Place",
+        "name": "二子山",
+        "alternateName": "ふたごやま",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "埼玉県",
+          "addressLocality": "秩父市"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 36.07077043802536,
+          "longitude": 138.86751495435584
+        }
+      },
+      {
+        "@type": "Place",
+        "name": "湯河原幕岩",
+        "alternateName": "ゆがわらまくいわ",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "神奈川県",
+          "addressLocality": "湯河原町"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 35.16689327929736,
+          "longitude": 139.08931396905484
+        }
+      },
+      {
+        "@type": "Place",
+        "name": "城ヶ崎",
+        "alternateName": "じょうがさき",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "静岡県",
+          "addressLocality": "伊東市"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 34.89093370085977,
+          "longitude": 139.13761144294992
+        }
+      },
+      {
+        "@type": "Place",
+        "name": "塩原",
+        "alternateName": "しおはら",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "栃木県",
+          "addressLocality": "那須塩原市"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 36.96832522858942,
+          "longitude": 139.83651206956102
+        }
+      },
+      {
+        "@type": "Place",
+        "name": "三峰",
+        "alternateName": "みつみね",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "長野県"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 35.949259672730875,
+          "longitude": 138.96962417030983
+        }
+      },
+      {
+        "@type": "Place",
+        "name": "鳳来寺山",
+        "alternateName": "ほうらいじやま",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "愛知県"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 34.9490,
+          "longitude": 137.5890
+        }
+      },
+      {
+        "@type": "Place",
+        "name": "恵那",
+        "alternateName": "えな",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "岐阜県"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 35.49925990969925,
+          "longitude": 137.342734471589
+        }
+      },
+      {
+        "@type": "Place",
+        "name": "笠置山",
+        "alternateName": "かさおきやま",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "岐阜県"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 35.4100,
+          "longitude": 137.2730
+        }
+      },
+      {
+        "@type": "Place",
+        "name": "下呂（飛騨金山）",
+        "alternateName": "げろ、ひだかなやま",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "岐阜県",
+          "addressLocality": "下呂市"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 35.5930,
+          "longitude": 137.2100
+        }
+      },
+      {
+        "@type": "Place",
+        "name": "六甲山",
+        "alternateName": "ろっこうさん",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "兵庫県",
+          "addressLocality": "神戸市"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 34.7730,
+          "longitude": 135.2490
+        }
+      },
+      {
+        "@type": "Place",
+        "name": "帝釈峡",
+        "alternateName": "たいしゃくきょう",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "広島県"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 34.9580,
+          "longitude": 133.2320
+        }
+      },
+      {
+        "@type": "Place",
+        "name": "大分・耶馬溪",
+        "alternateName": "おおいた、やばけい",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "大分県"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 33.3880,
+          "longitude": 131.2090
+        }
+      }
+    ]
+  }
+  </script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -17,10 +272,42 @@
       background: linear-gradient(180deg, #e0f2fe, #f8fafc);
       color: #333;
       padding: 1.5rem 1rem;
-      padding-bottom: 110px;
+      padding-bottom: 120px;
       overflow-x: hidden;
     }
+    
+    @media (max-width: 480px) {
+      body {
+        padding: 1rem 0.75rem;
+        padding-bottom: 120px;
+      }
+    }
     #app { max-width: 640px; margin: 0 auto; }
+    
+    /* レスポンシブ対応：スマホは2列、タブレット以上は対応 */
+    #areas-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    @media (max-width: 480px) {
+      /* 超小型スマホ：2列のまま */
+      #areas-container {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      body {
+        padding: 1rem 0.75rem;
+      }
+    }
+    
+    @media (min-width: 641px) {
+      /* タブレット以上：1列に戻す（元のレイアウト） */
+      #areas-container {
+        grid-template-columns: 1fr;
+      }
+    }
     .subtitle { font-size: 13px; color: #6b7280; margin-bottom: 1rem; }
     .api-note {
       font-size: 12px; color: #4a8a4a;
@@ -86,9 +373,10 @@
     .region-label {
       font-size: 12px; font-weight: 600; color: #888;
       letter-spacing: 0.05em; margin: 1.5rem 0 0.6rem;
+      grid-column: 1 / -1;
     }
     .area-card {
-      border-radius: 18px; border: none; margin-bottom: 14px;
+      border-radius: 18px; border: none;
       box-shadow: 0 10px 25px rgba(0,0,0,0.08); backdrop-filter: blur(6px);
       background: rgba(255,255,255,0.85); overflow: hidden; transition: 0.25s;
     }
@@ -180,6 +468,31 @@
     @media (max-width: 600px) {
       .card-desc, .card-wind, .card-precip { display: none; }
       .fc-wind-val { display: none; }
+      
+      /* スマホで2列レイアウト */
+      #areas-container {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      
+      .card-header {
+        padding: 12px;
+        flex-wrap: wrap;
+      }
+      
+      .card-name {
+        font-size: 14px;
+        min-width: 70px;
+      }
+      
+      .card-temp {
+        font-size: 18px;
+      }
+      
+      .card-toggle {
+        width: 100%;
+        text-align: right;
+      }
     }
     #btn-row {
   display: flex;
@@ -297,6 +610,9 @@
     </svg>
   </div>
 
+  <h1 style="font-size: 1.5rem; font-weight: 700; color: #333; margin-bottom: 0.5rem; text-align: center;">
+    クライミング天気予報
+  </h1>
   <p class="subtitle">日本のクライミング主要エリアの現在の天気・予報・時間帯別予報</p>
 
   <!-- バージョン情報 -->
@@ -313,7 +629,7 @@
           <ul style="margin-top:4px;padding-left:16px;color:#555;">
             <li>JMA API (Seamless) に切り替え（日本の気象データがより正確に）</li>
             <li>予報期間を16日間 → 11日間に調整</li>
-            <li>週末フィルターボタンを追加</li>
+            <li>週末フィルターボタンの追加</li>
           </ul>
         </div>
         <div style="margin-bottom:10px;">
