@@ -1410,8 +1410,12 @@ function toggleWeekend() {
     });
   </script>
   <script>
+    // ============================================
+    // Service Worker 自動更新機能
+    // ============================================
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
+        // Service Worker 登録
         navigator.serviceWorker.register('./sw.js')
           .then(function(reg) { 
             console.log('SW registered:', reg.scope);
@@ -1425,20 +1429,23 @@ function toggleWeekend() {
               
               newWorker.addEventListener('statechange', function() {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // 新バージョンが利用可能
-                  console.log('[App] 新バージョンが利用可能');
-                  
-                  // ユーザーに通知
-                  showUpdateNotification();
+                  // 新バージョンが利用可能 → 自動リロード
+                  console.log('[App] 新バージョンをインストール→自動リロード');
+                  showUpdateBanner();
                 }
               });
             });
             
-            // 定期的に更新チェック（1時間ごと）
+            // ============================================
+            // 定期的に更新チェック（30分ごと）
+            // ============================================
             setInterval(() => {
               reg.update();
               console.log('[App] 更新チェック実行');
-            }, 60 * 60 * 1000);
+            }, 30 * 60 * 1000);
+            
+            // 初回チェック：3秒後
+            setTimeout(() => reg.update(), 3000);
           })
           .catch(function(err) { 
             console.warn('SW registration failed:', err); 
@@ -1447,13 +1454,15 @@ function toggleWeekend() {
     }
     
     // ============================================
-    // 更新通知を表示する関数
+    // 更新通知を表示（ユーザーに知らせてから自動リロード）
     // ============================================
-    function showUpdateNotification() {
-      // 簡易版：コンソールに出力
-      console.log('[App] 新しいバージョンが利用可能です。ページをリロードしてください。');
+    let updateShown = false;
+    function showUpdateBanner() {
+      if (updateShown) return;
+      updateShown = true;
       
-      // 高度な実装：バナー表示（オプション）
+      console.log('[App] 更新バナーを表示');
+      
       if (!document.getElementById('update-banner')) {
         const banner = document.createElement('div');
         banner.id = 'update-banner';
@@ -1476,7 +1485,7 @@ function toggleWeekend() {
         `;
         
         banner.innerHTML = `
-          <span>🎉 新しいバージョンが利用可能です</span>
+          <span>🎉 アプリが更新されました</span>
           <button onclick="location.reload()" style="
             background: white;
             color: #059669;
@@ -1490,9 +1499,13 @@ function toggleWeekend() {
         `;
         
         document.body.insertBefore(banner, document.body.firstChild);
-        
-        // paddingを調整
         document.body.style.paddingTop = '50px';
+        
+        // 5秒後に自動リロード（ユーザーが無視した場合）
+        setTimeout(() => {
+          console.log('[App] 自動リロード実行');
+          location.reload();
+        }, 5000);
       }
     }
   </script>
