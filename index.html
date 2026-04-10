@@ -919,6 +919,7 @@
         'start_date=' + startVal,
         'end_date='   + endVal,
         'hourly=precipitation_probability',
+        'daily=precipitation_probability_max',
       ].join('&');
 
       var forecastData = await fetchWithRetry(
@@ -929,9 +930,15 @@
       // 3. 2つのAPIデータを統合
       // ============================================
       if (forecastData && forecastData.hourly && forecastData.hourly.precipitation_probability) {
-        // 汎用APIの降水確率をJMAデータに上書き
+        // 汎用APIの時間別降水確率をJMAデータに上書き
         jmaData.hourly.precipitation_probability = 
           forecastData.hourly.precipitation_probability;
+      }
+      
+      if (forecastData && forecastData.daily && forecastData.daily.precipitation_probability_max) {
+        // 汎用APIの日別降水確率をJMAデータに上書き
+        jmaData.daily.precipitation_probability_max = 
+          forecastData.daily.precipitation_probability_max;
       }
 
       var c = jmaData.current, d = jmaData.daily, h = jmaData.hourly;
@@ -973,15 +980,29 @@
         };
       });
 
+      // ============================================
+      // currentデータ：hourlyの最初のデータを使用
+      // （JMA APIはcurrentセクションが不安定のため）
+      // ============================================
+      var currentHourly = h.time.length > 0 ? {
+        temp:     Math.round(h.temperature_2m[0]),
+        humidity: h.relative_humidity_2m ? h.relative_humidity_2m[0] : null,
+        wind:     h.wind_speed_10m && h.wind_speed_10m[0] != null 
+                    ? parseFloat(h.wind_speed_10m[0].toFixed(1)) : 0,
+        precip:   h.precipitation && h.precipitation[0] != null 
+                    ? h.precipitation[0] : 0,
+        wmo:      h.weather_code ? h.weather_code[0] : 0,
+      } : {
+        temp:     Math.round(c && c.temperature_2m ? c.temperature_2m : 0),
+        humidity: c && c.relative_humidity_2m ? c.relative_humidity_2m : 0,
+        wind:     c && c.wind_speed_10m ? parseFloat(c.wind_speed_10m.toFixed(1)) : 0,
+        precip:   c && c.precipitation ? c.precipitation : 0,
+        wmo:      c && c.weather_code ? c.weather_code : 0,
+      };
+
       // 結果を構築
       var result = {
-        current: {
-          temp:     Math.round(c.temperature_2m),
-          humidity: c.relative_humidity_2m,
-          wind:     parseFloat(c.wind_speed_10m.toFixed(1)),
-          precip:   c.precipitation,
-          wmo:      c.weather_code,
-        },
+        current: currentHourly,
         days: days,
       };
 
