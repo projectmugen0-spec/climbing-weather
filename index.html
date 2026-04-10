@@ -953,26 +953,36 @@
         });
       });
 
-      // ★ 修正点：daily データを days 配列に変換
-      var days = [];
-      if (d.time && Array.isArray(d.time)) {
-        d.time.forEach(function(dateStr, i) {
-          days.push({
-            date:       dateStr,
-            wmo:        d.weather_code && d.weather_code[i] != null ? d.weather_code[i] : 0,
-            tempMax:    d.temperature_2m_max && d.temperature_2m_max[i] != null ? Math.round(d.temperature_2m_max[i]) : 0,
-            tempMin:    d.temperature_2m_min && d.temperature_2m_min[i] != null ? Math.round(d.temperature_2m_min[i]) : 0,
-            humidity:   d.relative_humidity_2m_max && d.relative_humidity_2m_max[i] != null ? d.relative_humidity_2m_max[i] : 50,
-            wind:       d.wind_speed_10m_max && d.wind_speed_10m_max[i] != null ? parseFloat(d.wind_speed_10m_max[i].toFixed(1)) : 0,
-            precip:     d.precipitation_sum && d.precipitation_sum[i] != null ? parseFloat(d.precipitation_sum[i].toFixed(1)) : 0,
-            precipProb: d.precipitation_probability_max && d.precipitation_probability_max[i] != null ? d.precipitation_probability_max[i] : null,
-            hourly:     hourlyByDate[dateStr] || []
-          });
-        });
-      }
+      // 日別データの処理
+      var days = d.time.map(function(date, i) {
+        var humAvg = Math.round(
+          (d.relative_humidity_2m_max[i] + d.relative_humidity_2m_min[i]) / 2
+        );
+        return {
+          date:       date,
+          wmo:        d.weather_code[i],
+          tempMax:    Math.round(d.temperature_2m_max[i]),
+          tempMin:    Math.round(d.temperature_2m_min[i]),
+          humidity:   humAvg,
+          precip:     d.precipitation_sum[i] != null ? d.precipitation_sum[i].toFixed(1) : '—',
+          precipProb: d.precipitation_probability_max[i] != null
+                        ? d.precipitation_probability_max[i] : null,
+          wind:       d.wind_speed_10m_max[i] != null
+                        ? d.wind_speed_10m_max[i].toFixed(1) : '—',
+          hourly:     hourlyByDate[date] || [],
+        };
+      });
 
+      // 結果を構築
       var result = {
-        current: c, daily: d, hourly: h, hourlyByDate: hourlyByDate, days: days
+        current: {
+          temp:     Math.round(c.temperature_2m),
+          humidity: c.relative_humidity_2m,
+          wind:     parseFloat(c.wind_speed_10m.toFixed(1)),
+          precip:   c.precipitation,
+          wmo:      c.weather_code,
+        },
+        days: days,
       };
 
       // キャッシュに保存
@@ -1107,11 +1117,41 @@ function toggleWeekend() {
       var probPct  = day.precipProb != null ? day.precipProb + '%' : '—';
       var probFill = day.precipProb != null ? day.precipProb + '%' : '0%';
 
-      // 日別判定（前日雨補正あり）
-      var judge = judgeClimbability({
-        temp: day.tempMax, humidity: day.humidity,
-        wind: parseFloat(day.wind), precip: parseFloat(day.precip) || 0
+      // 日別判定（日中時間帯の判定を優先）
+      // ★ 日中（9:00-17:00）のクライミング判定から最良のものを採用
+      var daytimeHourly = day.hourly.filter(function(h) {
+        var hour = parseInt(h.time.slice(0, 2));
+        return hour >= 9 && hour < 18;
       });
+      
+      var judge;
+      if (daytimeHourly.length > 0) {
+        // 日中時間帯がある場合：最良判定を使用
+        var daytimeJudges = daytimeHourly.map(function(h) {
+          return judgeClimbability({
+            temp: h.temp,
+            humidity: h.hum,
+            wind: h.wind,
+            precip: h.precip
+          });
+        });
+        
+        // 判定の優先度：登れる > 微妙 > 警柔 > 難しい
+        var judgePriority = { '✅ 登れる': 0, '⚠ 微妙': 1, '⚠ 警柔': 2, '❌ 難しい': 3 };
+        judge = daytimeJudges.sort(function(a, b) {
+          return (judgePriority[a.text] || 99) - (judgePriority[b.text] || 99);
+        })[0];
+      } else {
+        // 日中時間帯がない場合（夜間のみ）：従来の判定
+        judge = judgeClimbability({
+          temp: day.tempMax,
+          humidity: day.humidity,
+          wind: parseFloat(day.wind),
+          precip: parseFloat(day.precip) || 0
+        });
+      }
+      
+      // 前日雨補正（日別判定の後で適用）
       if (prevDay && prevDay.precip !== '—') {
         var pp = parseFloat(prevDay.precip);
         if (pp >= 5)      judge = { text: '❌ 乾いてない',      color: '#ef4444' };
@@ -1234,16 +1274,9 @@ function toggleWeekend() {
             '<span class="card-pref">' + area.pref + '</span>' +
             '<span class="card-status card-error">' + result.error + '</span>';
         } else {
-          var cur = result.current;
-
-var judge = judgeClimbability({
-  temp: cur.temperature_2m,
-  humidity: cur.relative_humidity_2m,
-  wind: cur.wind_speed_10m,
-  precip: cur.precipitation
-});
-
-var info = wmoToInfo(cur.weather_code);
+          var cur   = result.current;
+          var judge = judgeClimbability(cur);
+          var info  = wmoToInfo(cur.wmo);
           hdr.innerHTML =
             '<span class="card-name">'  + area.name        + '</span>' +
             '<span class="card-pref">'  + area.pref        + '</span>' +
